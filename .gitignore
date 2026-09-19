@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.db
+*.db-journal
+.env
+.env.local
+.DS_Store
+
+*.tsbuildinfo
+
+# 一次性的验证脚本和 CDP 留下的 Edge profile（几百 MB），只在本机有用
+.scratch/
+
+# Claude Code 的本机配置和技能数据
+.claude/

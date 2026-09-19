@@ -1,0 +1,19 @@
+{
+  "name": "ai-hot",
+  "private": true,
+  "type": "module",
+  "workspaces": ["server", "web"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "concurrently -n server,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm run dev -w @ai-hot/server",
+    "dev:web": "npm run dev -w @ai-hot/web",
+    "test": "npm run test -w @ai-hot/server",
+    "typecheck": "npm run typecheck -w @ai-hot/server && npm run typecheck -w @ai-hot/web",
+    "db:migrate": "npm run db:migrate -w @ai-hot/server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,407 @@
+@import "tailwindcss";
+
+/*
+ * 设计令牌。所有颜色/动效只在这里出现一次，组件里一律用 token 类名
+ * （bg-surface / text-accent / animate-pulse-ring ...）。
+ *
+ * ## 底色是**中性**的，饱和度只留给「信号」
+ *
+ * 上一版的 base/surface/elevated 蓝通道被抬高（#050510 / #0a0a1a / #12122a），
+ * 配 blue-500 + cyan-500，就是「每个 AI 产品都长这样」的那套配方。现在三层
+ * 底色的 R≈G≈B，页面整体是灰阶；唯一的彩色是**重要度**（urgent/high/medium）
+ * 和**真伪**（true/fake）。热点因此会自己从页面里跳出来。
+ *
+ * ## 四档重要度不是四个颜色，是「有信号 / 没信号」
+ *
+ * urgent 玫红（左轨 + 晕 + 流光）、high 琥珀（左轨 + 晕）、medium 天蓝（细轨、
+ * 无晕）、low 中性灰（无轨）。给每一档都上色等于没有信号——medium 和 low
+ * 刻意只靠轨道的**粗细与有无**区分，不靠色相。
+ *
+ * ## accent 只管「可交互」
+ *
+ * accent（青）现在只出现在焦点环、链接、激活态上，不再参与重要度表达。
+ * 它和 medium（天蓝）色相相邻，但两者从不出现在同一个元素上：
+ * accent 属于能点的东西，medium 属于内容的等级。
+ */
+@theme {
+  /*
+   * 底色与层次。中性近黑，蓝通道不再抬高。
+   *
+   * `--color-elevated` 从 `#17171a` 抬到 `#1b1b1f`：原来它离 `--color-base`
+   * 只差 13 个灰阶，卡片和页面几乎同色，整张卡完全靠那 1px 的边框撑着。
+   * 在**密集**的雷达列表里还看不出来（卡片一张挨一张，边界靠堆叠关系读得懂），
+   * 但统计卡和监控词/搜索页那种**又大又空**的卡片上，它就只是一块糊在
+   * 黑底上的黑块——这正是「背景太黑、不协调」的来源。
+   *
+   * 抬高的是卡片，不是页面：base 不动，「只有内容浮起来」这条关系才立得住。
+   */
+  --color-base: #0a0a0b;
+  --color-surface: #101012;
+  --color-elevated: #1b1b1f;
+
+  /* 主色。只用于可交互元素：焦点环、链接、激活态 */
+  --color-accent: #06b6d4;
+  --color-accent-soft: #22d3ee;
+
+  /*
+   * 重要度四档。全站只有这三色（+灰）表示「有多重要」。
+   *
+   * `low` 是 `#71717a` 而不是更暗的 `#52525b`：它要用作最低那档的边框与轨道，
+   * 太暗的话在 `#17171a` 的卡片上等于不存在，用户会以为那档**没有样式**。
+   * 它仍然不够亮到能当正文色（对比度约 3.9:1，低于 4.5:1 的门槛），
+   * 所以「次要」这两个字的字色走 `--color-muted`，只有边框走它。
+   */
+  --color-urgent: #f43f5e;
+  --color-high: #f59e0b;
+  --color-medium: #38bdf8;
+  --color-low: #71717a;
+
+  /* 真伪。只在真伪徽章上用，不与重要度抢注意力 */
+  --color-true: #10b981;
+  --color-fake: #ef4444;
+
+  --color-muted: #a1a1aa;
+  --color-faint: #52525b;
+
+  /*
+   * 正文字体。拉丁用 DM Sans，标题与数字用 Space Grotesk（--font-display）。
+   *
+   * 家族名里的 ` Variable` 后缀是 `@fontsource-variable/*` 注册的真名
+   * （在 main.tsx 里 import 的那些 css），**不是** `DM Sans`——写错名字的话
+   * 浏览器会一声不响地跳过它，整页回落到后面的中文字体。
+   *
+   * 中文字体前面必须夹一个**拉丁**系统字体（Segoe UI / 各平台的 system-ui）：
+   * 字体回退是**逐字形**的，一个字符只从第一个有它的字体里取。而中文
+   * 字体普遍把 `’`(U+2019) 做成**全角**字形，于是 `OpenAI’s` 会渲染成
+   * `OpenAI' s`（撇号后面多出一大块空白）。把拉丁字体排在前面，撇号
+   * 这类通用标点就从拉丁字体取窄字形；汉字在 Segoe UI 里没有，照旧
+   * 回落到雅黑/苹方，不受影响。
+   *
+   * 这两套拉丁字体都**不含汉字**，所以中文一律走系统字体——这不是缺陷，
+   * 是设计：引全套 CJK 字体要多几 MB，而雅黑/苹方本来就更好看。
+   */
+  --font-sans: "DM Sans Variable", "DM Sans", "Segoe UI", -apple-system, "PingFang SC",
+    "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: "Space Grotesk Variable", "Space Grotesk", "Segoe UI", -apple-system,
+    "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  /*
+   * 等宽只用于数字对齐。原来第一项写的 "JetBrains Mono" **从来就没有被安装过**
+   * （package.json 里没有，任何 @fontsource 包也不提供），所以它一直是个
+   * 死配置——实际渲染的一直是后面的 Cascadia Code / Consolas。删掉，
+   * 配置和事实对齐，零字节成本。
+   */
+  --font-mono: "Cascadia Code", "Consolas", ui-monospace, monospace;
+
+  --animate-beam: beam 8s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.4s ease-out both;
+  --animate-pulse-ring: pulse-ring 2s ease-out infinite;
+  --animate-spin-slow: spin 1.2s linear infinite;
+  --animate-ticker: ticker 48s linear infinite;
+  --animate-meteor: meteor 5s linear infinite;
+
+  /*
+   * Aceternity `Spotlight` 的入场。**这一条是必需的，不是可选的。**
+   *
+   * 这里原先写着「`spotlight` 不需要令牌，组件用内联 animation 接时长」——
+   * 那是错的，而且是**沉默的**错：`Spotlight.tsx` 用的是 `animate-spotlight`
+   * 工具类 + `opacity-0`。没有 `--animate-spotlight`，Tailwind 就不生成那个
+   * 工具类，元素于是**永远停在 `opacity-0`**，那束顶光从头到尾没有亮过，
+   * 控制台一声不吭。
+   *
+   * Tailwind v4 对 `@theme` 里的 `@keyframes` 做摇树：只有被某个动画值
+   * **按名引用**到时才会输出。`border-beam` 侥幸活着，是因为
+   * `BorderBeam.tsx` 的 arbitrary value 里字面写着 `border-beam`
+   * （`after:[animation:border-beam_...]`），被扫到了；`spotlight` 没有任何
+   * 地方这样引用，所以它的关键帧根本没进产物——已用 `vite build` 的产物
+   * 核对过，`@keyframes` 清单里只有 `border-beam`，没有 `spotlight`。
+   *
+   * 所以：**`border-beam` 确实不需要令牌**（它有内联 animation），
+   * **`spotlight` 需要**（它用的是工具类）。两者的理由不同，不能一起下结论。
+   */
+  --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
+
+  /* 背景光柱的呼吸。幅度刻意很小——它是背景，不该抢内容的注意力 */
+  @keyframes beam {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /*
+   * 入场。**只给统计卡那 4 张固定卡片用**，列表里的卡片不许用：
+   * 20 张卡各挂 30ms 递增延迟的话，最后一张要 360ms 后才可见，
+   * 对一个「想第一时间发现热点」的人来说，这是把页面做慢了。
+   */
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 12px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /* 新到条目/心跳点的外圈扩散 */
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+
+  /* 实时热点条的横向滚动。内容整体复制一份，位移 -50% 即无缝衔接 */
+  @keyframes ticker {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /*
+   * Aceternity `Meteors` 用的关键帧。
+   *
+   * 注意：这**替换**了上一版手写的同名 `meteor`（那版是 translate3d 位移，
+   * 这版是旋转 215° 后沿轴向位移）。两者同名不同义，必须二选一——
+   * 留着旧的会让 vendor 进来的组件动不起来，而且不报错。
+   */
+  @keyframes meteor {
+    0% {
+      transform: rotate(215deg) translateX(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(215deg) translateX(-500px);
+      opacity: 0;
+    }
+  }
+
+  /* Aceternity `BorderBeam`：让光点沿元素周界跑一圈 */
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
+    }
+  }
+
+  /* Aceternity `Spotlight` 的入场 */
+  @keyframes spotlight {
+    0% {
+      opacity: 0;
+      transform: translate(-72%, -62%) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -40%) scale(1);
+    }
+  }
+}
+
+html {
+  color-scheme: dark;
+  /*
+   * 滚动条槽位常驻。
+   *
+   * 三个 Tab 的内容高度差得很远：热点雷达一屏 20 张卡（实测 scrollHeight
+   * 3333px），监控词和搜索只有 805px。不预留槽位的话，切到雷达页时滚动条
+   * 突然出现，视口宽度从 1410 掉到 1400，于是**整条 `mx-auto max-w-7xl`
+   * 的内容横向平移 5px**——页头、实时条、卡片一起抖一下。这是切 Tab 时
+   * 除了动画重播之外的第二个抖动源，用 PerformanceObserver 抓 layout-shift
+   * 时它的头号 source 就是那个居中容器。
+   *
+   * `stable` 而不是 `overflow-y: scroll`：前者只是**留出**槽位，没滚动条时
+   * 那里什么都不画；后者会常驻一条空轨道，在深色底上是一条明显的灰边。
+   */
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--color-base);
+  color: #e4e4e7;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 标题与数字用 Space Grotesk——它比正文更紧、更有棱角，是「科技感」的主要来源 */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/*
+ * 旧版在这里有全局 CRT 扫描线（body::after）与四角压暗（body::before），
+ * 两者都是为「单屏终端」服务的。新版是滚动式仪表盘，全部移除。
+ * 需要氛围感的地方由 ui/ 下的光效组件局部提供，不污染整个页面。
+ */
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+/* 滚动条：细、低对比，不与内容争注意力 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #27272a transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+  background-clip: content-box;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-faint);
+}
+
+/* 让数字在等宽字体下对齐，用在统计卡与互动计数上 */
+.tabular {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * ============================================================================
+ * 自定义**类**一律放进 `@layer components`。这不是风格洁癖，是修一个 bug。
+ * ============================================================================
+ *
+ * Tailwind v4 的层顺序是 `theme, base, components, utilities`，而
+ * **没有分层（unlayered）的 CSS 永远赢过分层的 CSS**——与选择器权重无关。
+ * 上面这些规则原先就写在样式表顶层，于是：
+ *
+ *   .panel { border: 1px solid white/5 }      ← 未分层，赢
+ *   .border-urgent\/30 { border-color: … }    ← @layer utilities，输
+ *
+ * 结果是**卡片分级的「边框」那一维从来没生效过**，而且不报错、不看计算样式
+ * 发现不了。同一个 bug 还静默吃掉了 `Button` 的 `hover:border-white/20`、
+ * 监控词表单的 `border-accent/30`、以及任何想在 `.panel` / `.glass` 元素上
+ * 写 `bg-*` 的地方。
+ *
+ * 放进 `components` 层之后，工具类恢复「写在后面就能覆盖」的预期行为。
+ * 元素选择器和全局重置（`body` / `h1` / 滚动条）**保持未分层**——它们本来就
+ * 该是弱约定，不参与这套覆盖关系。
+ */
+@layer components {
+  /* 标题与数字的字体。与工具类同名（v4 会为 `--font-*` 生成 `font-*` 工具类），
+     值一致，放这里只是为了让 `tracking-*` 这类工具类盖得住 letter-spacing */
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /*
+   * 玻璃拟态。**只给页头和实时条这类「浮在内容之上」的少数元素用。**
+   *
+   * `backdrop-filter` 不是免费的：每个带它的元素都要独立合成一层。上一版把它
+   * 挂在每一张卡片上，一页 20 张就是 20 次合成——滚动时是实打实的开销。
+   * 卡片改用下面的 .panel 实底。
+   */
+  .glass {
+    background-color: color-mix(in srgb, white 4%, transparent);
+    border: 1px solid color-mix(in srgb, white 8%, transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  /*
+   * 卡片底。实色，不用 backdrop-filter。
+   *
+   * `--color-elevated` 在上一版是个**零处使用的死令牌**，这里把它复活成真正
+   * 的卡片底色：实底在暗色下比半透明白更干净（半透明会透出背景的光斑，
+   * 卡片边缘发脏），而且零合成成本。
+   *
+   * `inset 0 1px 0` 那道顶边高光是**必需的**，不是装饰：暗色下的卡片如果
+   * 只有一圈等亮的边框，读起来是「一个挖空的洞」；在顶边加一道比边框亮的
+   * 细线，「有光从上面照下来」这个物理隐喻才成立，卡片才浮起来。
+   * 用 `inset` 而不是 `border-top` 是因为它不占布局、也不受圆角影响。
+   */
+  .panel {
+    background-color: var(--color-elevated);
+    border: 1px solid color-mix(in srgb, white 6%, transparent);
+    box-shadow: inset 0 1px 0 0 color-mix(in srgb, white 7%, transparent);
+  }
+
+  /*
+   * 重要度左轨。2px 竖条，颜色由内联 `--rail` 给（urgent/high/medium）。
+   * low 档**不挂这个类**——「没有轨」本身就是最低那档的信号。
+   *
+   * ## `--rail-inset`：让竖条不必顶天立地
+   *
+   * 默认 0，也就是撑满宿主元素的高度——卡片要的就是这个（轨道从卡片的圆角
+   * 一端贯到另一端，读起来是「这张卡的一部分」）。
+   *
+   * 但通知列表里的宿主是**一条一条紧挨着的行**，撑满就出问题：相邻几条
+   * 未读的竖条首尾相接，连成一根贯穿整个列表的长线，看起来像列表左边
+   * 被人划了一道，而不是「这三条没读」。给每行设 `--rail-inset` 等于它
+   * 的纵向内边距，竖条就正好落在**内容盒**上——和文字同高，行与行之间
+   * 自然断开。
+   *
+   * 做一个变量而不是第二个类：`.signal-rail-inset::before` 和本规则
+   * 权重相同，谁生效只取决于书写顺序，改天挪一下文件顺序就会静默失效。
+   */
+  .signal-rail::before {
+    content: "";
+    position: absolute;
+    inset-block: var(--rail-inset, 0);
+    inset-inline-start: 0;
+    width: 2px;
+    background: var(--rail);
+  }
+}
+
+/*
+ * 全局降级。**这条只管 CSS 动画。**
+ *
+ * 它拦不住 framer-motion / Web Animations API——那些是 JS 逐帧驱动的，
+ * 不经过 CSS 的 animation duration。所以每一个 Aceternity 组件都还必须
+ * 自己调 `useReducedMotion()`，否则无障碍保证会在这里静默失效。
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

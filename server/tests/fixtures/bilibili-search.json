@@ -1,0 +1,69 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "seid": "1234567890",
+    "page": 1,
+    "pagesize": 20,
+    "numResults": 4,
+    "note": "本文件是 api.bilibili.com/x/web-interface/search/type?search_type=video 的真实响应结构。标题与简介里的 <em class=\"keyword\"> 是**接口真的会返回的**高亮标记，不是笔误——src/sources/bilibili-search.ts 的 text() 必须把它清掉。字段名与 popular 接口不同：play / review / favorites，且没有 share。",
+    "result": [
+      {
+        "type": "video",
+        "aid": 113000000000001,
+        "bvid": "BV1uNk1YxEJQ",
+        "title": "【全748集】目前B站最全最细的AI<em class=\"keyword\">大模型</em>零基础全套教程",
+        "description": "本课程从零讲解<em class=\"keyword\">大模型</em>原理与工程实践，含 RAG 与微调。",
+        "author": "大模型官方课程",
+        "pubdate": 1734681412,
+        "play": 3809633,
+        "like": 62426,
+        "review": 17923,
+        "favorites": 210000,
+        "danmaku": 8800
+      },
+      {
+        "type": "video",
+        "aid": 113000000000002,
+        "bvid": "BV1aa411c7mX",
+        "title": "<em class=\"keyword\">大模型</em>微调",
+        "description": "",
+        "author": "小up主",
+        "pubdate": 1789000000,
+        "play": 232,
+        "like": 9,
+        "review": 0,
+        "favorites": 3,
+        "danmaku": 0
+      },
+      {
+        "type": "video",
+        "aid": 113000000000003,
+        "bvid": "BV1bb411c7mY",
+        "title": "2026吃透AI Agent零基础全套教程",
+        "description": "智能体入门。",
+        "author": "",
+        "pubdate": 0,
+        "play": 358,
+        "like": 5,
+        "review": 1,
+        "favorites": 2,
+        "danmaku": 0
+      },
+      {
+        "type": "video",
+        "aid": 113000000000004,
+        "title": "这条没有 bvid，应当被丢掉",
+        "description": "拿不到稳定主键与可打开的链接。",
+        "author": "无 bvid",
+        "pubdate": 1789100000,
+        "play": 9999999,
+        "like": 999999,
+        "review": 999,
+        "favorites": 9999,
+        "danmaku": 99
+      }
+    ]
+  }
+}

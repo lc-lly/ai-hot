@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// 数据源：一个抓取目标（一个 RSS 地址、一个 subreddit 集合等）
+model Source {
+  id        String    @id @default(cuid())
+  kind      String
+  name      String
+  enabled   Boolean   @default(true)
+  /// JSON 对象，adapter 私有配置
+  config    String    @default("{}")
+  /// 来源可信权重，阶段 2 的 L3 交叉验证使用：官方源 > 一线媒体 > 社交 > 聚合
+  weight    Float     @default(1.0)
+  lastRunAt DateTime?
+  lastOk    Boolean?
+  lastError String?
+  createdAt DateTime  @default(now())
+
+  items HotItem[]
+
+  @@unique([kind, name])
+}
+
+/// 原始条目：从某个源抓到的一条内容
+model HotItem {
+  id          String    @id @default(cuid())
+  sourceId    String
+  source      Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  externalId  String
+  url         String
+  title       String
+  summary     String?
+  author      String?
+  lang        String?
+  publishedAt DateTime?
+  fetchedAt   DateTime  @default(now())
+  contentHash String
+  /// 物化的热度 0..1。由 `score/heat.ts` 在**落库时**算一次。
+  ///
+  /// 为什么物化而不是继续读时算：`heat` 是纯函数、不是 SQL 列，无法 `orderBy`。
+  /// 按热度排序就只能「先 take(200) 再内存排」——那不是 bug，是**必然错误的结果**
+  /// （先截断后排序）。落列之后排序/分页全部变成普通 SQL。
+  /// 算法变更时需要 backfill，可接受：`score/heat.ts` 是冻结口径，改动频率极低。
+  ///
+  /// **刻意可空而不是 `@default(0)`**：`0` 是合法的热度值（圆心），
+  /// 用 `0` 当默认就分不清「还没物化」和「热度确实是 0」，
+  /// SQL 排序会把未物化的行静默排到底部。null = 未物化，由读取方现算兜底。
+  heatScore   Float?
+  /// 物化的领域分类，同 `heatScore` 的理由。见 `score/domain.ts`
+  domain      String?
+  /// 物化的重要程度 urgent|high|medium|low，同理由。见 `score/importance.ts`
+  importance  String?
+  /// `importance` 的数值档位（urgent=3 … low=0）。
+  /// 单独存一列是因为**字符串列按字母序排是错的**（high < low < medium < urgent），
+  /// 而 Prisma 没法在 orderBy 里写 CASE 表达式。见 `score/importance.ts` 的 IMPORTANCE_RANK。
+  importanceRank Int?
+  /// pending | done | skipped | failed —— 阶段 2 的 AI 处理状态
+  aiState     String    @default("pending")
+  /// 条目级真伪判定（L2）。与 Match 上的字段不同：这里是「这条内容本身可不可信」，
+  /// 与任何关键词无关，雷达盘上的真伪标记用它。
+  authenticity Float?
+  /// JSON string[]，如 ["clickbait","ai_generated"]。条目级。
+  aiFlags     String    @default("[]")
+  /// AI 给出的理由。低置信时必须保留（spec §4.2：低置信不删除，只降级，留可找回的痕迹）
+  aiReasoning String?
+  aiScoredAt  DateTime?
+  clusterId   String?
+  cluster     Cluster?  @relation(fields: [clusterId], references: [id])
+  /// JSON，adapter 抓到的原始载荷，便于回溯
+  raw         String?
+
+  matches Match[]
+
+  @@unique([sourceId, externalId])
+  @@index([contentHash])
+  @@index([fetchedAt])
+  @@index([aiState])
+  // 下面三个 index 服务于筛选栏的排序与筛选，见 routes/items.ts
+  @@index([heatScore])
+  @@index([importance])
+  @@index([importanceRank])
+  @@index([publishedAt])
+}
+
+/// 事件簇：同一件事的多个来源聚合（阶段 2 填充，阶段 1 恒为空）
+model Cluster {
+  id           String   @id @default(cuid())
+  title        String
+  firstSeenAt  DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  itemCount    Int      @default(0)
+  sourceCount  Int      @default(0)
+  heatScore    Float    @default(0)
+  aiSummary    String?
+  aiVerdict    String?
+  aiConfidence Float?
+
+  items   HotItem[]
+  matches Match[]
+
+  @@index([lastSeenAt])
+}
+
+/// 监控关键词
+model Topic {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  /// JSON string[]，命中任一即算候选
+  include       String   @default("[]")
+  /// JSON string[]，命中任一直接丢弃
+  exclude       String   @default("[]")
+  /// JSON string[]，空数组表示不限来源
+  sourceKinds   String   @default("[]")
+  minConfidence Float    @default(0.5)
+  /// high_only | all_confirmed | digest
+  notifyPolicy  String   @default("high_only")
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  matches Match[]
+}
+
+/// 一次关键词命中及其 AI 判定结果
+model Match {
+  id           String    @id @default(cuid())
+  topicId      String
+  topic        Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  itemId       String
+  item         HotItem   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  clusterId    String?
+  cluster      Cluster?  @relation(fields: [clusterId], references: [id])
+  relevance    Float?
+  authenticity Float?
+  confidence   Float?
+  /// AI 判定「这条的主旨是不是就是在讲这个关键词」。
+  /// true = 直接提及 / false = 间接相关 / null = 尚未判定。
+  ///
+  /// 刻意**不叫 `mentioned`**：L1 产出两样不同的东西——
+  /// `matchedKeywords`（字面出现过，来自 prefilter）和
+  /// `aboutKeywords`（主旨是关于，来自 AI）。卡片上「直接提及/间接相关」
+  /// 要的是后者。用前者会让卡片声称「直接提及」而 AI 其实只判了「顺带提了一句」。
+  isAbout      Boolean?
+  /// JSON string[]，如 ["clickbait","rumor"]
+  flags        String    @default("[]")
+  reasoning    String?
+  /// pending | pushed | confirmed | rejected_by_ai | rejected_by_user
+  status       String    @default("pending")
+  /// null | ai_wrong | ai_right —— 用户对 AI 判定的反馈，用于日后积累样本
+  userFeedback String?
+  notifiedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@unique([topicId, itemId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// 站内 / 推送 / 邮件消息。
+/// 一行 = 一条站内消息（inapp 渠道的落地），其余渠道是同一事件的分发结果，
+/// 记在 channels 里而不是各开一行——否则「已读」状态会在多个渠道间分裂。
+model Notification {
+  id      String   @id @default(cuid())
+  /// push | pending —— 对应 spec §4.1 的置信度分流档位
+  level   String   @default("pending")
+  title   String
+  body    String
+  payload String   @default("{}")
+  /// JSON string[]，实际投递成功的渠道：inapp | webpush | email
+  channels String  @default("[]")
+  itemId  String?
+  topicId String?
+  read    Boolean  @default(false)
+  sentAt  DateTime @default(now())
+  error   String?
+
+  @@index([sentAt])
+  @@index([read])
+}
+
+/// 定时任务的运行记录，喂给 /api/jobs
+model JobRun {
+  id         String    @id @default(cuid())
+  name       String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  durationMs Int       @default(0)
+  ok         Boolean   @default(true)
+  /// JSON，任务自己的结果摘要（如 {fetched:59, inserted:59}）
+  result     String    @default("{}")
+  error      String?
+
+  @@index([name, startedAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  failCount Int      @default(0)
+}
+
+/// AI 调用审计，喂给成本面板
+model AiCall {
+  id               String   @id @default(cuid())
+  purpose          String
+  model            String
+  promptHash       String
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  latencyMs        Int      @default(0)
+  ok               Boolean  @default(true)
+  error            String?
+  cached           Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([promptHash])
+}
+
+/// prompt 哈希 → 响应的缓存，避免重复花钱
+model AiCache {
+  promptHash String   @id
+  purpose    String
+  response   String
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+
+  @@index([expiresAt])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

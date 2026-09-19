@@ -1,0 +1,38 @@
+{
+  "name": "@ai-hot/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.2.0",
+    "cheerio": "^1.0.0",
+    "express": "^5.0.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.0",
+    "rss-parser": "^3.13.0",
+    "web-push": "^3.6.7",
+    "ws": "^8.18.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^6.4.17",
+    "@types/supertest": "^7.2.1",
+    "@types/web-push": "^3.6.4",
+    "@types/ws": "^8.5.13",
+    "prisma": "^6.2.0",
+    "supertest": "^7.2.2",
+    "tsx": "^4.19.0",
+    "vitest": "^2.1.0"
+  }
+}

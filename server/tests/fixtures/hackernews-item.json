@@ -1,0 +1,38 @@
+{
+  "90001": {
+    "id": 90001,
+    "type": "story",
+    "by": "fisherman",
+    "time": 1789430400,
+    "title": "DeepSeek releases a new coding model",
+    "url": "https://example.com/deepseek-coding",
+    "score": 412,
+    "descendants": 133
+  },
+  "90002": {
+    "id": 90002,
+    "type": "story",
+    "by": "pg",
+    "time": 1789430500,
+    "title": "Ask HN: How do you keep up with AI news?",
+    "text": "I keep missing important releases. What is your workflow?",
+    "score": 88,
+    "descendants": 41
+  },
+  "90003": {
+    "id": 90003,
+    "type": "comment",
+    "by": "someone",
+    "time": 1789430600,
+    "text": "this is a comment, not a story"
+  },
+  "90004": {
+    "id": 90004,
+    "type": "job",
+    "by": "hr",
+    "time": 1789430700,
+    "title": "We are hiring",
+    "url": "https://example.com/jobs",
+    "score": 1
+  }
+}

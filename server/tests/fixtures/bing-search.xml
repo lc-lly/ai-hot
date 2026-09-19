@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  本文件是 www.bing.com/search?q=X&format=rss 的真实响应结构。
+  注意两条：
+  1. 没有 <dc:creator> —— Bing 不提供作者，parseFeed 会回落到 feed 名，
+     bing-search 的 toBingItems 必须把它改回 null。
+  2. 没有 <guid> —— parseFeed 会退回用 <link> 当 guid。
+-->
+<rss version="2.0">
+  <channel>
+    <title>大模型 - Bing</title>
+    <link>https://www.bing.com/search?q=%E5%A4%A7%E6%A8%A1%E5%9E%8B</link>
+    <description>Bing 搜索结果</description>
+    <item>
+      <title>大模型推理成本一年下降 90% - 某科技媒体</title>
+      <link>https://example.com/llm-inference-cost</link>
+      <description>过去一年推理单价的变化，以及它对智能体产品形态的影响。</description>
+      <pubDate>Tue, 15 Sep 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>开源模型排行榜更新 &amp; 评测方法说明</title>
+      <link>https://example.com/leaderboard-update</link>
+      <description>榜单口径变化 &mdash;&mdash; 从人工评测转向自动基准。</description>
+      <pubDate>Tue, 15 Sep 2026 07:30:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>没有链接的条目应当被丢掉</title>
+      <description>parseFeed 会因为缺 link 而跳过它。</description>
+    </item>
+  </channel>
+</rss>

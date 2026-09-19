@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>示例科技媒体</title>
+    <link>https://example.com</link>
+    <item>
+      <title>DeepSeek 发布新一代编程模型</title>
+      <link>https://example.com/posts/deepseek-coding?utm_source=rss</link>
+      <guid isPermaLink="false">post-1001</guid>
+      <description><![CDATA[<p>该模型在 <b>SWE-bench</b> 上取得 78% 的成绩 &amp; 引发讨论。</p>]]></description>
+      <dc:creator>张三</dc:creator>
+      <pubDate>Mon, 15 Sep 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>没有日期的条目</title>
+      <link>https://example.com/posts/no-date</link>
+      <guid isPermaLink="false">post-1002</guid>
+      <description>简短描述</description>
+    </item>
+  </channel>
+</rss>

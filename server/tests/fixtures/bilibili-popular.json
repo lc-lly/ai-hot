@@ -1,0 +1,72 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": {
+    "note": "本文件是 api.bilibili.com/x/web-interface/popular 的真实响应结构，字段名逐字取自实测。删字段前先看 src/sources/bilibili.ts 的 parsePopular。",
+    "list": [
+      {
+        "aid": 113000000000001,
+        "bvid": "BV1xx411c7mD",
+        "title": "我用大模型重写了整个后端，踩了 17 个坑",
+        "desc": "一次真实的 LLM 重构实验：哪些能交给模型，哪些绝对不能。附完整代码。",
+        "pubdate": 1789000000,
+        "duration": 612,
+        "owner": { "mid": 12345678, "name": "技术宅小明" },
+        "stat": {
+          "view": 772253,
+          "like": 45120,
+          "share": 3120,
+          "reply": 880,
+          "favorite": 12000,
+          "coin": 5400,
+          "danmaku": 1200,
+          "now_rank": 0,
+          "vt": 0
+        }
+      },
+      {
+        "aid": 113000000000002,
+        "bvid": "BV1yy411c7mE",
+        "title": "三分钟学会炒蛋炒饭",
+        "desc": "家常做法，简单好吃。",
+        "pubdate": 1789050000,
+        "duration": 180,
+        "owner": { "mid": 87654321, "name": "厨房日记" },
+        "stat": {
+          "view": 40135,
+          "like": 8799,
+          "share": 191,
+          "reply": 233,
+          "favorite": 900,
+          "coin": 120,
+          "danmaku": 45
+        }
+      },
+      {
+        "aid": 113000000000003,
+        "bvid": "BV1zz411c7mF",
+        "title": "国产芯片最新进展：这次是真的追上了",
+        "pubdate": 0,
+        "owner": null,
+        "stat": {
+          "view": 3123069,
+          "like": 210000,
+          "share": 45000,
+          "reply": 12000,
+          "favorite": 88000,
+          "coin": 33000,
+          "danmaku": 9900
+        }
+      },
+      {
+        "aid": 113000000000004,
+        "title": "这条没有 bvid，应当被丢掉",
+        "desc": "AI 相关，但拿不到稳定主键和可打开的链接。",
+        "pubdate": 1789100000,
+        "owner": { "name": "无 bvid 的投稿" },
+        "stat": { "view": 999999, "like": 99999, "share": 9999 }
+      }
+    ]
+  }
+}

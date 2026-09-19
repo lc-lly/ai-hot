@@ -1,0 +1,57 @@
+{
+  "kind": "Listing",
+  "data": {
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "id": "abc123",
+          "name": "t3_abc123",
+          "title": "DeepSeek V5 benchmark leak",
+          "url": "https://reddit.com/r/LocalLLaMA/comments/abc123/deepseek_v5_benchmark_leak/",
+          "permalink": "/r/LocalLLaMA/comments/abc123/deepseek_v5_benchmark_leak/",
+          "selftext": "Screenshots circulating on Chinese social media.",
+          "author": "throwaway_ai",
+          "created_utc": 1789430400,
+          "score": 812,
+          "num_comments": 240,
+          "link_flair_text": "News",
+          "over_18": false
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "def456",
+          "name": "t3_def456",
+          "title": "Weekly discussion thread",
+          "url": "https://reddit.com/r/LocalLLaMA/comments/def456/weekly/",
+          "permalink": "/r/LocalLLaMA/comments/def456/weekly/",
+          "selftext": "",
+          "author": "AutoModerator",
+          "created_utc": 1789420400,
+          "score": 12,
+          "num_comments": 88,
+          "stickied": true,
+          "over_18": false
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "id": "ghi789",
+          "name": "t3_ghi789",
+          "title": "NSFW sidebar thing",
+          "url": "https://reddit.com/r/LocalLLaMA/comments/ghi789/nsfw/",
+          "permalink": "/r/LocalLLaMA/comments/ghi789/nsfw/",
+          "selftext": "",
+          "author": "spammer",
+          "created_utc": 1789410400,
+          "score": 3,
+          "num_comments": 0,
+          "over_18": true
+        }
+      }
+    ]
+  }
+}

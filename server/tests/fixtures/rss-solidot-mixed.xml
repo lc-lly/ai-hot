@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Solidot 奇客的**真实**条目（取自线上，2026-09-17 那一批），不加工标题。
+
+  用途：测 `rss` 的按需白名单（`readOptInKeywords`）。这个源是这批订阅源里
+  唯一的综合科技源，会发气象/汽车/人口这类与 AI 无关的内容，所以它需要
+  白名单，而 Latent Space 那几个 AI 专源不需要。
+
+  四条各有各的用处，别删：
+    1. 《地球正变得不那么扁平》  用户实际报的那条。标题摘要都不沾 AI → 该被挡
+    2. 《微信蠕虫事件敲响 AI 安全警钟》  标题命中 `ai` → 该保留
+    3. 《青藏高原升温与加州的洪水相关》  标题无关，但**摘要里提了 AI**。
+       这条同时测两件事：它该被挡（只看标题），而且它证明了「摘要命中」
+       在 RSS 上比榜单源更危险——RSS 的 summary 往往就是**全文**。
+    4. 《律师…归咎于 ChatGPT》  这是**已知的误杀**：内容真的与 AI 有关，
+       但标题里没有词表里的任何词（`ChatGPT` 不含 `ai` 这个词元，
+       因为 `ai` 带字母数字边界）。固化成断言，免得日后有人以为它是 bug。
+-->
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Solidot 奇客</title>
+    <link>https://www.solidot.org</link>
+    <item>
+      <title>地球正变得不那么扁平</title>
+      <link>https://www.solidot.org/story?sid=85407</link>
+      <guid isPermaLink="false">85407</guid>
+      <description>地球并非是完美的球形，自转以及围绕太阳公转使其赤道部分隆起，两极部分扁平。根据一项新研究，可能是由于极地地区的冰雪融化，地球两极在隆起。</description>
+      <pubDate>Thu, 17 Sep 2026 17:52:29 +0800</pubDate>
+    </item>
+    <item>
+      <title>微信蠕虫事件敲响 AI 安全警钟</title>
+      <link>https://www.solidot.org/story?sid=85410</link>
+      <guid isPermaLink="false">85410</guid>
+      <description>一种被命名为 WeWorm 的零点击蠕虫被发现可通过微信通话在 iOS 与 Android 之间传播。</description>
+      <pubDate>Thu, 17 Sep 2026 16:10:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>青藏高原升温与加州的洪水相关</title>
+      <link>https://www.solidot.org/story?sid=85403</link>
+      <guid isPermaLink="false">85403</guid>
+      <description>研究人员用 AI 模型分析了 2016-2017 与 2022-2023 两个冬季的数据，发现青藏高原升温与加州的反常强降水存在关联。</description>
+      <pubDate>Thu, 17 Sep 2026 14:30:00 +0800</pubDate>
+    </item>
+    <item>
+      <title>律师在谋杀案中捏造了证词，他将此归咎于 ChatGPT</title>
+      <link>https://www.solidot.org/story?sid=85399</link>
+      <guid isPermaLink="false">85399</guid>
+      <description>一名辩护律师提交的证词被查出系捏造，他向法庭解释说是 ChatGPT 生成的。</description>
+      <pubDate>Thu, 17 Sep 2026 11:05:00 +0800</pubDate>
+    </item>
+  </channel>
+</rss>

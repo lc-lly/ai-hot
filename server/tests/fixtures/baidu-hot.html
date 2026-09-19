@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>百度热搜榜</title>
+</head>
+<body>
+<!--
+  本文件是 top.baidu.com/board?tab=realtime 的**结构**复刻，不是整页拷贝。
+  榜单条目不在 DOM 里，只在这段注释里——用 cheerio 解析 DOM 会一条都拿不到，
+  这正是 src/sources/baidu-hot.ts 用正则抠注释的原因。删这段注释等于复现「百度改版」。
+-->
+<!--s-data:{"data":{"cards":[{"content":[{"query":"宇树科技大涨","desc":"人形机器人赛道再度升温，机构看好具身智能产业化落地。","hotScore":"7904587","hotChange":"up","rawUrl":"https://www.baidu.com/s?wd=%E5%AE%87%E6%A0%91%E7%A7%91%E6%8A%80%E5%A4%A7%E6%B6%A8","index":0},{"query":"严禁AI魔改","desc":"多部门联合发文，规范生成式人工智能内容标注。","hotScore":"6100233","hotChange":"same","rawUrl":"https://www.baidu.com/s?wd=%E4%B8%A5%E7%A6%81AI%E9%AD%94%E6%94%B9","index":1},{"query":"某地烧烤节开幕","desc":"为期一周的美食节吸引大量游客。","hotScore":"4980122","hotChange":"down","rawUrl":"https://www.baidu.com/s?wd=%E7%83%A7%E7%83%A4%E8%8A%82","index":2},{"query":"晚点聊：开源模型与推理成本","desc":"","hotScore":"3332807","hotChange":"up","rawUrl":"https://www.baidu.com/s?wd=%E5%BC%80%E6%BA%90%E6%A8%A1%E5%9E%8B","index":3},{"query":"这条没有链接","desc":"AI 相关，但两条 URL 字段都空，点不开。","hotScore":"1234567","hotChange":"same","index":4}],"updateTime":"1789636905"}]}}
+-->
+<div class="wrap">
+  <main id="main"></main>
+</div>
+</body>
+</html>

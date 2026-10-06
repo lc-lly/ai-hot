@@ -130,25 +130,33 @@ ai-hot/
 │       ├── realtime/         # WebSocket 服务端 + 内存日志总线
 │       └── util/             # 并发控制（mapLimit）、文本工具
 │
-└── web/                      # 前端
-    ├── index.html
-    ├── vite.config.ts        # dev server 代理 /api 与 /ws 到 8787
-    └── src/
-        ├── main.tsx          # 入口（含字体引入）
-        ├── App.tsx           # 三个 Tab 的状态机
-        ├── styles.css        # Tailwind v4 主题与自定义层
-        ├── net/              # 网络层
-        │   ├── api.ts        #   所有 HTTP 调用的唯一出口
-        │   └── useRealtime.ts#   WebSocket 连接、心跳、退避重连
-        ├── state/            # 数据 hook：useDashboard/useFeed/useTicker 等
-        ├── components/
-        │   ├── ui/           #   基础组件：Card/Field/Button/Badge/Toast 等
-        │   ├── aceternity/   #   视觉组件（Meteors/Spotlight/NumberTicker…）
-        │   ├── HotspotCard.tsx / StatCards.tsx / FilterSortBar.tsx
-        │   ├── KeywordPanel.tsx / SearchPanel.tsx / NotificationBell.tsx
-        │   └── AppHeader.tsx / TabNav.tsx / LiveTicker.tsx
-        ├── lib/              # cn()=twMerge+clsx、格式化、归一化
-        └── types.ts          # 与后端 DTO 对齐的类型
+├── web/                      # 前端
+│   ├── index.html
+│   ├── vite.config.ts        # dev server 代理 /api 与 /ws 到 8787
+│   └── src/
+│       ├── main.tsx          # 入口（含字体引入）
+│       ├── App.tsx           # 三个 Tab 的状态机
+│       ├── styles.css        # Tailwind v4 主题与自定义层
+│       ├── net/              # 网络层
+│       │   ├── api.ts        #   所有 HTTP 调用的唯一出口
+│       │   └── useRealtime.ts#   WebSocket 连接、心跳、退避重连
+│       ├── state/            # 数据 hook：useDashboard/useFeed/useTicker 等
+│       ├── components/
+│       │   ├── ui/           #   基础组件：Card/Field/Button/Badge/Toast 等
+│       │   ├── aceternity/   #   视觉组件（Meteors/Spotlight/NumberTicker…）
+│       │   ├── HotspotCard.tsx / StatCards.tsx / FilterSortBar.tsx
+│       │   ├── KeywordPanel.tsx / SearchPanel.tsx / NotificationBell.tsx
+│       │   └── AppHeader.tsx / TabNav.tsx / LiveTicker.tsx
+│       ├── lib/              # cn()=twMerge+clsx、格式化、归一化
+│       └── types.ts          # 与后端 DTO 对齐的类型
+│
+└── skills/                   # Agent Skill —— 独立于上面的服务，不共享代码
+    └── hotspot-radar/        # 自包含热点监控技能（零依赖 CLI + 文档）
+        ├── SKILL.md          # Claude Code 入口
+        ├── AGENTS.md         # 通用 Agent 入口（Codex/Cursor/…）
+        ├── README.md         # 技能自己的说明
+        ├── scripts/          # fetch / watch / sources 等（仅标准库）
+        └── references/       # CLI、信源、流程、准则、排错
 ```
 
 ## 快速开始
@@ -303,6 +311,55 @@ L0 的取向是**宁松勿紧**——误放进来的代价是一次便宜的 L1 
 搜索类是**靠 query 驱动**的，没有 query 就返回空数组，不会每轮往站外打空查询。
 
 默认种子里 `reddit` 是**禁用**的——国内网络对 `reddit.com` 存在 DNS 污染，实测 TCP 超时。`hackernews`（Google Firebase）、`hn-algolia` 和几个境外 RSS 在国内机房也不可达，部署到国内服务器时建议一并禁用。
+
+## 技能：hotspot-radar
+
+`skills/hotspot-radar/` 是一个**自包含的 Agent Skill**（Claude Code / Codex / Cursor 等通用）。
+它和上面的服务是**两条独立的路径，不共享任何代码**：
+
+| | `server/` + `web/` | `skills/hotspot-radar/` |
+|---|---|---|
+| 形态 | 常驻进程 + SQLite + 前端 | 一组 CLI，跑完即退出 |
+| 依赖 | Node 20、Express、Prisma… | **只要 Python 3.8+，仅标准库** |
+| API Key | DeepSeek（可选） | **不需要**，13 个源全部免密钥 |
+| 谁做分析 | 分层 AI（L0–L3，花 token） | **调用它的 Agent 本身**，零 token 费用 |
+
+一句话：服务是「长期跑、自动分诊、命中就推送」；技能是「你问一次、它抓一次、Agent 自己读完给你答」。
+
+```bash
+cd skills/hotspot-radar
+py scripts/fetch.py --since 24h --limit 10 --out ~/.hotspot-radar/runs/today.json
+py scripts/watch.py --add "deepseek,智能体,MCP"   # 监控词设一次
+py scripts/watch.py                              # 之后每次只报新增
+```
+
+### ⚠️ 它查的是**榜单数据**，不是搜索
+
+这是理解它输出的前提 —— **13 个源全是热榜 / RSS / Trending**：
+百度热搜、B站综合热门、掘金推荐、GitHub 搜索、GitHub Trending、V2EX 热帖、
+36氪、InfoQ 中国、少数派、阮一峰、Solidot、Hacker News、Lobsters。
+
+> 注意这份清单和上面 `server/` 的 12 个适配器**是两套独立实现**，别混用。
+
+**榜单回答的是「此刻什么在被讨论」，不是「关于 X 的一切」。** 由此有三条硬约束：
+
+1. **只有进榜的内容才拿得到。** 没上榜、或排在榜单靠后的，一条都抓不到 ——
+   这是榜单本身就没有，不是抓取失败。
+2. **榜单是当日快照。** 每天换一批，今天没有不代表功能坏了。
+3. **榜单是全品类的，不是 AI 频道。** 百度热搜、B站热门、Lobsters 上 AI 内容
+   往往只占少数 —— 实测 `--since 24h --limit 10` 抓到 **61 条**，其中
+   **约 42 条（69%）和 AI 完全无关**（时政、体育、游戏番剧、系统编程）。
+   所以输出里的 **`count` 是「抓取条数」，不是「AI 热点条数」**，
+   两者的落差是正常漏斗（过滤 → 跨源去重 → 聚类），不是丢数据。
+
+由此推论：**「枚举某个人/某个机构的全部产出」它做不到** —— 榜单里没有的人就是没有，
+B站 UP主 投稿接口实测也需要登录态。这类需求得先 `WebSearch` 找人发了什么，
+再把主题词拿回技能的 `--grep` 去 13 个源里做跨源匹配。
+
+技能另有 `--author` / `--grep` 做确定性子串过滤（人名、机构名都支持），
+完整命令、schema 与踩坑记录见
+[`skills/hotspot-radar/README.md`](skills/hotspot-radar/README.md)
+和 [`references/cli.md`](skills/hotspot-radar/references/cli.md)。
 
 ## 测试
 

@@ -326,12 +326,24 @@ L0 的取向是**宁松勿紧**——误放进来的代价是一次便宜的 L1 
 
 一句话：服务是「长期跑、自动分诊、命中就推送」；技能是「你问一次、它抓一次、Agent 自己读完给你答」。
 
+### 安装
+
+不用 clone 整个仓库（`server/` + `web/` 和这个技能无关），一行装完：
+
 ```bash
-cd skills/hotspot-radar
-py scripts/fetch.py --since 24h --limit 10 --out ~/.hotspot-radar/runs/today.json
-py scripts/watch.py --add "deepseek,智能体,MCP"   # 监控词设一次
-py scripts/watch.py                              # 之后每次只报新增
+npx skills add lc-lly/ai-hot --skill hotspot-radar      # 装到当前项目
+npx skills add lc-lly/ai-hot --skill hotspot-radar -g   # 装到用户级，所有项目可用
+npx skills add lc-lly/ai-hot -l                         # 只列出仓库里有哪些 skill，不安装
 ```
+
+装好后**不用记任何命令**，直接用自然语言问：
+
+> 今天 AI 圈有什么热点？
+> 最近 DeepSeek 有什么进展？
+> 帮我盯「智能体、MCP」这几个词，之后只报新增的。
+
+抓取和归一化由 Python 脚本完成，去重、聚类、排序、摘要由**调用它的 Agent** 完成，
+所以这一步不烧 token。想脱离 Agent 手动跑，命令见文末的 `references/cli.md`。
 
 ### ⚠️ 它查的是**榜单数据**，不是搜索
 
